@@ -53,6 +53,10 @@ def main():
                 return
         screen.blit(bg_img, [0, 0])
 
+        # こうかとんと爆弾が重なったらゲーム終了
+        if kk_rct.colliderect(bb_rct):
+            return
+
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
         # if key_lst[pg.K_UP]:
@@ -68,10 +72,12 @@ def main():
             if key_lst[key]:  # キーが入力されていたら実行
                 sum_mv[0] += tpl[0]  # 横方向
                 sum_mv[1] += tpl[1]  # 縦方向
+
         kk_rct.move_ip(sum_mv)  # こうかとんの移動
         if check_bound(kk_rct) != (True, True):  # こうかとんが画面内にいなかったら実行
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 指定された移動をなかったことにする
         screen.blit(kk_img, kk_rct)  # こうかとんを画面に追加
+
         bb_rct.move_ip(vx, vy)  # 爆弾の移動
         beside, vertical = check_bound(bb_rct)  # 爆弾が画面内にいるかどうかチェックした結果をbesideとverticalに代入
         if not beside:  # 横方向がはみ出していたら実行
@@ -79,6 +85,7 @@ def main():
         if not vertical:  # 縦方向がはみ出していたら実行
             vy *= -1  # y方向の移動を反転させる
         screen.blit(bb_img, bb_rct)  # 爆弾を画面に追加
+
         pg.display.update()  # 画面を更新
         tmr += 1
         clock.tick(50)
