@@ -16,6 +16,21 @@ DELTA = {
 }
 
 
+# 画面内or画面外の判定をする
+def check_bound(obj_rct: pg.Rect):
+    """
+    引数:こうかとん or 爆弾のRect
+    戻り値:真理値タプル（横判定結果, 縦判定結果）
+    画面内ならTrue,画面外ならFalse
+    """
+    beside, vertical = True, True
+    if obj_rct.left < 0 or WIDTH < obj_rct.right:
+        beside = False
+    if obj_rct.top < 0 or HEIGHT < obj_rct.bottom:
+        vertical = False
+    return beside, vertical
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")  # ゲームウィンドウの名前を設定
     screen = pg.display.set_mode((WIDTH, HEIGHT))  # 幅がWIDTH、高さがHEIGHTのスクリーンを作成
@@ -49,16 +64,22 @@ def main():
         # if key_lst[pg.K_RIGHT]:
         #     sum_mv[0] += 5
 
-        for key, tpl in DELTA.items():
-            if key_lst[key]:
+        for key, tpl in DELTA.items():  # 辞書DELTAの要素を一つずつkeyとtplにそれぞれ代入
+            if key_lst[key]:  # キーが入力されていたら実行
                 sum_mv[0] += tpl[0]  # 横方向
                 sum_mv[1] += tpl[1]  # 縦方向
-
-        kk_rct.move_ip(sum_mv)
-        screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx, vy)
-        screen.blit(bb_img, bb_rct)
-        pg.display.update()
+        kk_rct.move_ip(sum_mv)  # こうかとんの移動
+        if check_bound(kk_rct) != (True, True):  # こうかとんが画面内にいなかったら実行
+            kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 指定された移動をなかったことにする
+        screen.blit(kk_img, kk_rct)  # こうかとんを画面に追加
+        bb_rct.move_ip(vx, vy)  # 爆弾の移動
+        beside, vertical = check_bound(bb_rct)  # 爆弾が画面内にいるかどうかチェックした結果をbesideとverticalに代入
+        if not beside:  # 横方向がはみ出していたら実行
+            vx *= -1  # x方向の移動を反転させる
+        if not vertical:  # 縦方向がはみ出していたら実行
+            vy *= -1  # y方向の移動を反転させる
+        screen.blit(bb_img, bb_rct)  # 爆弾を画面に追加
+        pg.display.update()  # 画面を更新
         tmr += 1
         clock.tick(50)
 
