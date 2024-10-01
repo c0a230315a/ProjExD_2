@@ -7,6 +7,7 @@ import pygame as pg
 
 WIDTH, HEIGHT = 1100, 650  # ウィンドウの幅と高さを設定
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+kk_img = pg.transform.flip(pg.image.load("fig/3.png"), True, False)  # kk_imgを定義
 
 # 押されたキーに対する移動量辞書DELTAを定義
 DELTA = {
@@ -14,6 +15,19 @@ DELTA = {
     pg.K_DOWN : (0, 5),  # 下方向キー
     pg.K_LEFT : (-5, 0),  # 左方向キー
     pg.K_RIGHT : (5, 0)  # 右方向キー
+}
+
+# 移動量の合計値タプル辞書
+ROTO = {
+    (0, 0) : pg.transform.rotozoom(kk_img, 0, 0.9),  # こうかとん画像kk_imgを0.9倍に拡大したSurfaceを生成する
+    (0, -5): pg.transform.rotozoom(kk_img, 90, 0.9),
+    (5, -5): pg.transform.rotozoom(kk_img, 45, 0.9),
+    (5, 0): pg.transform.rotozoom(kk_img, 0, 0.9),
+    (5, 5): pg.transform.rotozoom(kk_img, -45, 0.9),
+    (0, 5): pg.transform.rotozoom(kk_img, -90, 0.9),
+    (-5, 5): pg.transform.flip(pg.transform.rotozoom(kk_img, -45, 0.9), True, False),
+    (-5, 0): pg.transform.flip(pg.transform.rotozoom(kk_img, 0, 0.9), True, False),
+    (-5, -5): pg.transform.flip(pg.transform.rotozoom(kk_img, 45, 0.9), True, False)
 }
 
 
@@ -32,6 +46,11 @@ def check_bound(obj_rct: pg.Rect):
     return beside, vertical
 
 
+# 角度を確認する関数
+def check_roto_kk(movement):
+    return ROTO[(movement[0], movement[1])]
+
+
 # 円の初期設定
 def make_circle(r):
     bb_img = pg.Surface((20*r, 20*r))  # 空のSurfaceを作成
@@ -46,10 +65,9 @@ def main():
     pg.display.set_caption("逃げろ！こうかとん")  # ゲームウィンドウの名前を設定
     screen = pg.display.set_mode((WIDTH, HEIGHT))  # 幅がWIDTH、高さがHEIGHTのスクリーンを作成
     bg_img = pg.image.load("fig/pg_bg.jpg")  # 画像をbg_imgに格納
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)  # こうかとん画像3.pngを0.9倍に拡大したSurfaceを生成する
-    kk_rct = kk_img.get_rect()  # こうかとんSurfaceに対応するRectを取得
+    kk_img_transformed = pg.transform.rotozoom(kk_img, 0, 0.9)  # こうかとん画像kk_imgを0.9倍に拡大したSurfaceを生成する
+    kk_rct = kk_img_transformed.get_rect()  # こうかとんSurfaceに対応するRectを取得
     kk_rct.center = 300, 200  # 初期座標300，200を設定する
-
 
     # 円の初期設定(make_circle)を実行
     bb_accs = [a for a in range(1, 11)]
@@ -124,11 +142,12 @@ def main():
                 sum_mv[0] += tpl[0]  # 横方向
                 sum_mv[1] += tpl[1]  # 縦方向
 
+        kk_img_transformed = check_roto_kk(sum_mv)
 
         kk_rct.move_ip(sum_mv)  # こうかとんの移動
         if check_bound(kk_rct) != (True, True):  # こうかとんが画面内にいなかったら実行
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 指定された移動をなかったことにする
-        screen.blit(kk_img, kk_rct)  # こうかとんを画面に追加
+        screen.blit(kk_img_transformed, kk_rct)  # こうかとんを画面に追加
 
 
         bb_rct.move_ip(avx, avy)  # 爆弾の移動
