@@ -32,6 +32,15 @@ def check_bound(obj_rct: pg.Rect):
     return beside, vertical
 
 
+def make_circle(r):
+    bb_img = pg.Surface((20*r, 20*r))  # 空のSurfaceを作成
+    bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
+    pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)  # 円を作成
+    bb_rct = bb_img.get_rect()  # 爆弾rectの抽出
+    bb_rct.center = random.randint(10*r, WIDTH-10*r), random.randint(10*r, HEIGHT-10*r)  # 爆弾の中心を決定
+    return bb_img, bb_rct
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")  # ゲームウィンドウの名前を設定
     screen = pg.display.set_mode((WIDTH, HEIGHT))  # 幅がWIDTH、高さがHEIGHTのスクリーンを作成
@@ -39,11 +48,18 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)  # こうかとん画像3.pngを0.9倍に拡大したSurfaceを生成する
     kk_rct = kk_img.get_rect()  # こうかとんSurfaceに対応するRectを取得
     kk_rct.center = 300, 200  # 初期座標300，200を設定する
-    bb_img = pg.Surface((20, 20))  # 空のSurfaceを作成
-    bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
-    bb_rct = bb_img.get_rect()  # 爆弾rectの抽出
-    bb_rct.center = random.randint(20, WIDTH-20), random.randint(20, HEIGHT-20)
+
+    bb_accs = [a for a in range(1, 11)]
+    bb = []
+    for r in range(1, 11):
+        bb_img, bb_rct = make_circle(r)
+        bb.append([bb_img, bb_rct])
+        
+    # bb_img = pg.Surface((20, 20))  # 空のSurfaceを作成
+    # bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
+    # pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)  # 円を作成
+    # bb_rct = bb_img.get_rect()  # 爆弾rectの抽出
+    # bb_rct.center = random.randint(10, WIDTH-10), random.randint(10, HEIGHT-10)  # 爆弾の中心を決定
     vx, vy = +5, +5
 
     end_surface = pg.Surface((WIDTH, HEIGHT))
@@ -70,6 +86,11 @@ def main():
             if event.type == pg.QUIT: 
                 return
         screen.blit(bg_img, [0, 0])
+
+        avx = vx*bb_accs[min(tmr//500, 9)]
+        avy = vy*bb_accs[min(tmr//500, 9)]
+        bb_img = bb[min(tmr//500, 9)][0]
+        bb_rct = bb[min(tmr//500, 9)][1]
 
         # こうかとんと爆弾が重なったらゲーム終了
         if kk_rct.colliderect(bb_rct):
@@ -104,7 +125,7 @@ def main():
         screen.blit(kk_img, kk_rct)  # こうかとんを画面に追加
 
 
-        bb_rct.move_ip(vx, vy)  # 爆弾の移動
+        bb_rct.move_ip(avx, avy)  # 爆弾の移動
         beside, vertical = check_bound(bb_rct)  # 爆弾が画面内にいるかどうかチェックした結果をbesideとverticalに代入
         if not beside:  # 横方向がはみ出していたら実行
             vx *= -1  # x方向の移動を反転させる
