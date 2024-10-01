@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import pygame as pg
 
@@ -22,6 +23,13 @@ def main():
     kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)  # こうかとん画像3.pngを0.9倍に拡大したSurfaceを生成する
     kk_rct = kk_img.get_rect()  # こうかとんSurfaceに対応するRectを取得
     kk_rct.center = 300, 200  # 初期座標300，200を設定する
+    bb_img = pg.Surface((20, 20))  # 空のSurfaceを作成
+    bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
+    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
+    bb_rct = bb_img.get_rect()  # 爆弾rectの抽出
+    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    vx, vy = +5, +5
+
     clock = pg.time.Clock()  # clockにフレームレートを指定する関数を紐づける
     tmr = 0  # tmrを初期化する
     while True:
@@ -48,6 +56,8 @@ def main():
 
         kk_rct.move_ip(sum_mv)
         screen.blit(kk_img, kk_rct)
+        bb_rct.move_ip(vx, vy)
+        screen.blit(bb_img, bb_rct)
         pg.display.update()
         tmr += 1
         clock.tick(50)
