@@ -1,5 +1,6 @@
 import os
 import random
+import time
 import sys
 import pygame as pg
 
@@ -42,8 +43,25 @@ def main():
     bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
     bb_rct = bb_img.get_rect()  # 爆弾rectの抽出
-    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+    bb_rct.center = random.randint(20, WIDTH-20), random.randint(20, HEIGHT-20)
     vx, vy = +5, +5
+
+    end_surface = pg.Surface((WIDTH, HEIGHT))
+    end_surface.set_alpha(100)
+    pg.draw.rect(end_surface, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
+
+    fonto = pg.font.Font(None, 80)
+    txt = fonto.render("Game Over", True, (255, 255, 255))
+    txt_rct = txt.get_rect()
+    txt_rct.center = WIDTH/2, HEIGHT/2
+
+    margin = 25
+    end_kkl = pg.image.load("fig/8.png")
+    end_kkl_rct = end_kkl.get_rect()
+    end_kkl_rct.center = WIDTH/2 - txt.get_width()/2 - end_kkl.get_width()/2 - margin, HEIGHT/2
+    end_kkr = pg.image.load("fig/8.png")
+    end_kkr_rct = end_kkl.get_rect()
+    end_kkr_rct.center = WIDTH/2 + txt.get_width()/2 + end_kkr.get_width()/2 + margin, HEIGHT/2
 
     clock = pg.time.Clock()  # clockにフレームレートを指定する関数を紐づける
     tmr = 0  # tmrを初期化する
@@ -55,7 +73,12 @@ def main():
 
         # こうかとんと爆弾が重なったらゲーム終了
         if kk_rct.colliderect(bb_rct):
-            print("Game Over")
+            screen.blit(end_surface, [0, 0])
+            screen.blit(txt, txt_rct)
+            screen.blit(end_kkl, end_kkl_rct)
+            screen.blit(end_kkr, end_kkr_rct)
+            pg.display.update()
+            time.sleep(5)  # 5秒間処理を一時停止
             return
 
         key_lst = pg.key.get_pressed()
