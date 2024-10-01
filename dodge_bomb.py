@@ -32,6 +32,7 @@ def check_bound(obj_rct: pg.Rect):
     return beside, vertical
 
 
+# 円の初期設定
 def make_circle(r):
     bb_img = pg.Surface((20*r, 20*r))  # 空のSurfaceを作成
     bb_img.set_colorkey((0, 0, 0))  # 円の四隅を透過させる
@@ -49,6 +50,8 @@ def main():
     kk_rct = kk_img.get_rect()  # こうかとんSurfaceに対応するRectを取得
     kk_rct.center = 300, 200  # 初期座標300，200を設定する
 
+
+    # 円の初期設定(make_circle)を実行
     bb_accs = [a for a in range(1, 11)]
     bb = []
     for r in range(1, 11):
@@ -62,15 +65,18 @@ def main():
     # bb_rct.center = random.randint(10, WIDTH-10), random.randint(10, HEIGHT-10)  # 爆弾の中心を決定
     vx, vy = +5, +5
 
+    # 黒い背景の初期設定
     end_surface = pg.Surface((WIDTH, HEIGHT))
     end_surface.set_alpha(100)
     pg.draw.rect(end_surface, (0, 0, 0), (0, 0, WIDTH, HEIGHT))
 
+    # Game Overの初期設定
     fonto = pg.font.Font(None, 80)
     txt = fonto.render("Game Over", True, (255, 255, 255))
     txt_rct = txt.get_rect()
     txt_rct.center = WIDTH/2, HEIGHT/2
 
+    # 泣いてるこうかとんの初期設定
     margin = 25
     end_kkl = pg.image.load("fig/8.png")
     end_kkl_rct = end_kkl.get_rect()
@@ -87,18 +93,18 @@ def main():
                 return
         screen.blit(bg_img, [0, 0])
 
-        avx = vx*bb_accs[min(tmr//500, 9)]
-        avy = vy*bb_accs[min(tmr//500, 9)]
-        bb_img = bb[min(tmr//500, 9)][0]
-        bb_rct = bb[min(tmr//500, 9)][1]
+        avx = vx*bb_accs[min(tmr//500, 9)]  # 時間が立つに連れ速度が上がり、最大で50まで早くなる
+        avy = vy*bb_accs[min(tmr//500, 9)]  # 同上
+        bb_img: pg.Surface = bb[min(tmr//500, 9)][0]  # 時間が立つに連れサイズが上がり、半径は最大で100となる
+        bb_rct: pg.Rect = bb[min(tmr//500, 9)][1]  # サイズが上がった際にサイズを格納する変数
 
         # こうかとんと爆弾が重なったらゲーム終了
         if kk_rct.colliderect(bb_rct):
-            screen.blit(end_surface, [0, 0])
-            screen.blit(txt, txt_rct)
-            screen.blit(end_kkl, end_kkl_rct)
-            screen.blit(end_kkr, end_kkr_rct)
-            pg.display.update()
+            screen.blit(end_surface, [0, 0])  # 黒い背景の追加
+            screen.blit(txt, txt_rct)  # Game Overの追加
+            screen.blit(end_kkl, end_kkl_rct)  # こうかとん(左)の追加
+            screen.blit(end_kkr, end_kkr_rct)  # こうかとん(右)の追加
+            pg.display.update()  # 画面の更新
             time.sleep(5)  # 5秒間処理を一時停止
             return
 
