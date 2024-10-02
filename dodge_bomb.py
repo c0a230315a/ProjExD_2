@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import time
@@ -61,6 +62,22 @@ def make_circle(r):
     return bb_img, bb_rct
 
 
+def follow_bom(kk_rct: pg.Rect, bb_rct: pg.Rect, x, y):
+    global before_x, before_y
+    marginx = kk_rct.centerx - bb_rct.centerx  # kk_rct - bb_rct > 0 のとき爆弾から見て右方向にこうかとんはいる
+    marginy = kk_rct.centery - bb_rct.centery  # kk_rct - bb_rct > 0 のとき爆弾から見て下方向にこうかとんはいる
+    margin = math.sqrt(marginx ** 2 + marginy ** 2)
+
+    if margin < 300:
+        return before_x, before_y
+    
+    dx, dy = x * marginx / margin, y * marginy / margin
+    before_x, before_y = dx, dy
+
+
+    return dx, dy
+
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん")  # ゲームウィンドウの名前を設定
     screen = pg.display.set_mode((WIDTH, HEIGHT))  # 幅がWIDTH、高さがHEIGHTのスクリーンを作成
@@ -102,6 +119,8 @@ def main():
     end_kkr = pg.image.load("fig/8.png")
     end_kkr_rct = end_kkl.get_rect()
     end_kkr_rct.center = WIDTH/2 + txt.get_width()/2 + end_kkr.get_width()/2 + margin, HEIGHT/2
+
+    before_x, before_y = +5, +5
 
     clock = pg.time.Clock()  # clockにフレームレートを指定する関数を紐づける
     tmr = 0  # tmrを初期化する
@@ -149,8 +168,9 @@ def main():
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 指定された移動をなかったことにする
         screen.blit(kk_img_transformed, kk_rct)  # こうかとんを画面に追加
 
-
+        avx, avy = follow_bom(kk_rct, bb_rct, avx, avy)
         bb_rct.move_ip(avx, avy)  # 爆弾の移動
+        
         beside, vertical = check_bound(bb_rct)  # 爆弾が画面内にいるかどうかチェックした結果をbesideとverticalに代入
         if not beside:  # 横方向がはみ出していたら実行
             vx *= -1  # x方向の移動を反転させる
